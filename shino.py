@@ -17,8 +17,8 @@ async def on_message(message):
 	if 'bitburner' in message.content.lower():
 		await message.channel.send('Bitburner is sooo good!')
 
-	if 'doom' in message.content.lower():
-		await message.channel.send('**Dooooooom**')
+	#if 'doom' in message.content.lower():
+	#	await message.channel.send('**Dooooooom**')
 
 	await bot.process_commands(message)
 
@@ -29,7 +29,7 @@ async def help(ctx):
 Here's its commands:
 ```>>help - bot info
 >>ping - if bot responds, its alive
->>game - bot selects a random game from dSolver's incremental games plaza
+>>game <n> - bot selects n mod 10 distinct random games from dSolver's incremental games plaza
 >>sing - bot sings shino's favorite incremental game song
 >>fav - bot talks about the idle games that Shino remembers fondly```''')
 
@@ -59,17 +59,26 @@ async def sing(ctx):
 	await ctx.send('https://timewastinggames.bandcamp.com/track/life-is-a-countdown')
 
 @bot.command()
-async def game(ctx):
+async def game(ctx, n):
 	async with ctx.channel.typing():
-			BASE_API_URL = "https://plaza.dsolver.ca/api/games"
-			EMBED_QUERY = '&customFields=slug,name,link,shortDescription,logo'
+		BASE_API_URL = "https://plaza.dsolver.ca/api/games"
+		EMBED_QUERY = '&customFields=slug,name,link,shortDescription,logo'
 
-			async with aiohttp.ClientSession() as session:
+		if not n.isdigit():
+			await ctx.send(f'{ctx.author.mention} I cant count {n} games...')
+			return
+
+		async with aiohttp.ClientSession() as session:
+			linkset = set()
+			while len(linkset) < int(n) % 10:
 				async with session.get(f'{BASE_API_URL}?random=true{EMBED_QUERY}') as resp:
 					if resp.status != 200:
 						await ctx.send("Something went wrong!  Please try again in a few moments.")
 						return
 					rand_game, = await resp.json()  # Comma after rand_game to get unpack the list and get the dict
-				await ctx.send(f'{ctx.author.mention} Try {rand_game["link"]}')
+					link = rand_game['link']
+					linkset.add(link)
+			linkstr = '\n'.join(linkset)
+			await ctx.send(f"{ctx.author.mention} Try: \n{linkstr}")
 
 bot.run(config.TOKEN)
