@@ -59,7 +59,7 @@ async def sing(ctx):
 	await ctx.send('https://timewastinggames.bandcamp.com/track/life-is-a-countdown')
 
 @bot.command()
-async def game(ctx, n):
+async def game(ctx, n='1'):
 	async with ctx.channel.typing():
 		BASE_API_URL = "https://plaza.dsolver.ca/api/games"
 		EMBED_QUERY = '&customFields=slug,name,link,shortDescription,logo'
